@@ -16,7 +16,8 @@ class App extends Component {
 		this.grid = generateBoard(this.bounds[0], this.bounds[1]);
 		this.state = { liveCells: [] };
 		this.handleClick = this.handleClick.bind(this);
-		this.startGame = this.startGame.bind(this);
+		this.start = this.start.bind(this);
+		this.stop = this.stop.bind(this);
 	}
 
 	isAlive(cell) {
@@ -31,11 +32,15 @@ class App extends Component {
 		this.setState({ liveCells: this.state.liveCells });
 	}
 
-	startGame() {
+	start() {
 		this.game = new Game(this.bounds, this.state.liveCells);
-		setInterval(() => {
+		this.intervalId = setInterval(() => {
 			this.setState({ liveCells: this.game.nextGeneration() });
 		}, 1000);
+	}
+
+	stop() {
+		clearInterval(this.intervalId);
 	}
 
 	generateBoard() {
@@ -62,7 +67,8 @@ class App extends Component {
 			<main>
 				{this.generateBoard()}
 				<section>
-					<button onClick={this.startGame}>Start Game</button>
+					<button onClick={this.start}>Start</button>
+					<button onClick={this.stop}>Stop</button>
 				</section>
 			</main>
 		);
