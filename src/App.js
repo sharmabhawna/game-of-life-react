@@ -1,28 +1,72 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import Game from "./Game";
+
+const createArray = function(length) {
+	return new Array(length).fill(0);
+};
+
+const generateBoard = function(rows, columns) {
+	return createArray(rows, rows).map(x => createArray(columns));
+};
 
 class App extends Component {
-  render() {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
-  }
+	constructor(props) {
+		super(props);
+		this.bounds = props.bounds;
+		this.grid = generateBoard(this.bounds[0], this.bounds[1]);
+		this.state = { liveCells: [] };
+		this.handleClick = this.handleClick.bind(this);
+		this.startGame = this.startGame.bind(this);
+	}
+
+	isAlive(cell) {
+		return this.state.liveCells.some(([row, col]) => {
+			return row === cell[0] && col === cell[1];
+		});
+	}
+
+	handleClick(event) {
+		const [rowId, columnId] = event.target.id.split("-");
+		this.state.liveCells.push([+rowId, +columnId]);
+		this.setState({ liveCells: this.state.liveCells });
+	}
+
+	startGame() {
+		this.game = new Game(this.bounds, this.state.liveCells);
+		setInterval(() => {
+			this.setState({ liveCells: this.game.nextGeneration() });
+		}, 1000);
+	}
+
+	generateBoard() {
+		const rows = this.grid.map((row, rowId) => {
+			const columns = row.map((cell, columnId) => {
+				let className = "dead-cell";
+				if (this.isAlive([rowId, columnId])) {
+					className = "live-cell";
+				}
+				const id = rowId + "-" + columnId;
+				return <td id={id} className={className} />;
+			});
+			return (
+				<tbody>
+					<tr>{columns}</tr>
+				</tbody>
+			);
+		});
+		return <table onClick={this.handleClick}>{rows}</table>;
+	}
+
+	render() {
+		return (
+			<main>
+				{this.generateBoard()}
+				<section>
+					<button onClick={this.startGame}>Start Game</button>
+				</section>
+			</main>
+		);
+	}
 }
 
 export default App;
